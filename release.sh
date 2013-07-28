@@ -4,7 +4,7 @@ FS=/home
 
 echo "Scanning the Filesystem!"
 
-if [ -f "$FS" ]; then
+if [ -f $FS ]; then
 
 echo "ALL the system are correct!"
 
